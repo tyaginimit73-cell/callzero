@@ -1,0 +1,22 @@
+{
+  "name": "callzero",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CallZero - Stay connected when you have no mobile balance using internet-based communication.",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "test": "npm run test -w server",
+    "test:client": "npm run test -w client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

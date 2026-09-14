@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+build/
+client/dist/
+
+# Environment & secrets
+.env
+.env.*
+*.env
+
+# Keep the safe example file
+!.env.example
+
+# MongoDB in-memory test dir
+server/.tmp/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Vite cache
+.vite/
