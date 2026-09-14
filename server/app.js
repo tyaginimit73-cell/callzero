@@ -42,13 +42,17 @@ app.get('/api/health', (req, res) =>
   res.json({ success: true, status: 'ok', uptime: process.uptime(), time: new Date().toISOString() })
 );
 
-app.get('/api/config/rtc', (req, res) =>
+app.get('/api/config/rtc', protect, (req, res) =>
   res.json({
     success: true,
     data: {
       stun: env.STUN_SERVER,
       turn: env.TURN_SERVER
-        ? { url: env.TURN_SERVER, username: env.TURN_USERNAME }
+        ? {
+            url: env.TURN_SERVER,
+            username: env.TURN_USERNAME,
+            credential: env.TURN_PASSWORD,
+          }
         : null,
     },
   })

@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
-    "test": "TMPDIR=./.tmp NODE_ENV=test node --test --test-concurrency=1 tests/",
+    "test": "cross-env TMPDIR=./.tmp NODE_ENV=test node --test --test-concurrency=1 tests/api.test.js tests/auth.test.js tests/socket.test.js",
     "seed": "node scripts/seed.js"
   },
   "dependencies": {
@@ -26,6 +26,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "mongodb-memory-server": "^10.0.0",
     "supertest": "^7.0.0"
   }

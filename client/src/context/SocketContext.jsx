@@ -29,8 +29,15 @@ export function SocketProvider({ children }) {
       return;
     }
 
-    const token = localStorage.getItem('callzero_token');
-    const s = io('/', { auth: { token }, withCredentials: true, transports: ['websocket', 'polling'] });
+       const token = localStorage.getItem('callzero_token');
+       const API_URL = import.meta.env.VITE_API_URL || '/';
+
+    const s = io(API_URL, {
+      auth: { token },
+      withCredentials: true,
+      transports: ['websocket', 'polling'],
+    });
+
     socketRef.current = s;
 
     s.on('connect', () => setConnected(true));

@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-/** Axios instance wired to the Vite dev proxy (relative '/api' URLs). */
+/** Axios instance wired to the backend API. */
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export const api = axios.create({
-  baseURL: '/api',
-  withCredentials: true, // send HTTP-only cookie on every request
+  baseURL: `${API_URL}/api`,
+  withCredentials: true,
   timeout: 15000,
 });
 

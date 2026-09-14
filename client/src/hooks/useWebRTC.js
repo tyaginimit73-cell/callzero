@@ -3,6 +3,7 @@ import { useSocket } from '../context/SocketContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
 const STUN = 'stun:stun.l.google.com:19302';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const CallStatus = {
   idle: 'idle',
@@ -52,17 +53,35 @@ export function useWebRTC({ mode = 'voice', autoAccept = false } = {}) {
 
   // ---- Ice config from server ----
   async function getRtcConfig() {
-    try {
-      const res = await fetch('/api/config/rtc');
-      const j = await res.json();
-      const servers = [{ urls: STUN }];
-      if (j.data?.stun) servers.push({ urls: j.data.stun });
-      if (j.data?.turn?.url) servers.push({ urls: j.data.turn.url, username: j.data.turn.username, credential: '' });
-      return { iceServers: servers };
-    } catch {
-      return { iceServers: [{ urls: STUN }] };
+  try {
+    const res = await fetch(`${API_URL}/api/config/rtc`, {
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to load RTC configuration');
     }
+
+    const j = await res.json();
+    const servers = [{ urls: STUN }];
+
+    if (j.data?.stun) {
+      servers.push({ urls: j.data.stun });
+    }
+
+    if (j.data?.turn?.url && j.data?.turn?.username && j.data?.turn?.credential) {
+      servers.push({
+        urls: j.data.turn.url,
+        username: j.data.turn.username,
+        credential: j.data.turn.credential,
+      });
+    }
+
+    return { iceServers: servers };
+  } catch {
+    return { iceServers: [{ urls: STUN }] };
   }
+}
 
   const getMedia = useCallback(async (withVideo) => {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('Media devices not supported');
@@ -186,7 +205,7 @@ export function useWebRTC({ mode = 'voice', autoAccept = false } = {}) {
         await pc.setRemoteDescription(payload.sdp);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        socket.emit('call:answer', { callId: payload.callId, sdp: pc.localDescription, receiverId: peerRef.current?._id });
+        socket.emit('call:answer', { callId: payload.callId, sdp: pc.localDescription, receiverId: payload.from._id });
         clearIncomingCall();
       } catch (e) {
         setError(e.message);
@@ -264,7 +283,7 @@ export function useWebRTC({ mode = 'voice', autoAccept = false } = {}) {
               setStatus(CallStatus.ended);
               toast.error('Contact is offline right now.');
               // record missed call via server
-              fetch('/api/calls', {
+              fetch(`${API_URL}/api/calls`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -287,7 +306,7 @@ export function useWebRTC({ mode = 'voice', autoAccept = false } = {}) {
         // timeout if no answer in 30s
         timeoutsRef.current.callTimeout = setTimeout(() => {
           if (statusRef.current === CallStatus.calling) {
-            socket.emit('call:timeout', { callId });
+            socket.emit('call:timeout', { callId: callIdRef.current });
             setStatus(CallStatus.ended);
             toast.error('No answer. Call missed.');
             cleanup();
